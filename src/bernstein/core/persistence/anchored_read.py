@@ -103,6 +103,15 @@ def open_anchored(
         An open file descriptor for the final component.  The caller owns it
         and must close it.
 
+        With *require_regular_file*, ``O_NONBLOCK`` is **still set** on that
+        descriptor -- it is added for the open and never cleared.  The type
+        check has already established the descriptor is a regular file, and
+        ``O_NONBLOCK`` is inert for those: reads neither return ``EAGAIN`` nor
+        come up short, which is why the flag is left alone rather than cleared
+        with an extra ``fcntl`` round trip.  A caller that hands the descriptor
+        to a layer expecting blocking semantics, or that reopens the same
+        number for something other than a regular file, owns clearing it.
+
     Raises:
         ValueError: If no components are given, or one is not a single
             component name.
